@@ -59,7 +59,7 @@ processLocation = () => {
 
     resultsPanel.text("");
 
-    var url = "//dev.urbica.co:35004/api/rpc/metro_geojson?x1="+center[0]+"&y1="+center[1]+"&num_stations=5"
+    var url = "https://router.dev.urbica.co/api/rpc/metro_geojson?x1="+center[0]+"&y1="+center[1]+"&num_stations=5"
 
     routesOverlay.removeAll();
     routesYandexOverlay.removeAll();
