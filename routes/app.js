@@ -5,14 +5,14 @@ var points = [],
     resultsPanel = d3.select("#results"),
     currentPoint = 0,
     maxRandomPoints = 25,
-    center = [37.628118,55.740905];
+    center = [37.627183862426424, 55.73485197977672];
 
 function init () {
 
   // Создаем карту с добавленной на нее кнопкой.
   var map = new ymaps.Map('map', {
       center: center,
-      zoom: 12,
+      zoom: 14.2,
       controls: []
   });
 
@@ -20,13 +20,14 @@ function init () {
   map.geoObjects.add(objectManager);
 
   var centerPoint = new ymaps.GeoObject({
-            geometry: { type: "Point", coordinates: [37.628118,55.740905,37.628118,55.740905] }
+            geometry: { type: "Point", coordinates: center }
         }, {
             preset: 'islands#blackDotIcon',
             draggable: true
         });
   centerPoint.events.add("dragend", function () {
     center = centerPoint.geometry.getCoordinates();
+    //console.log(center);
     processLocation();
   });
 
@@ -54,6 +55,8 @@ function init () {
     //center = centerPoint.geometry.getCoordinates();
     processLocation();
   });
+
+
 
 processLocation = () => {
 
@@ -175,9 +178,15 @@ processLocation = () => {
 
       }
   }
+
+  //start
+  //start app
+  processLocation();
+
+
+
 }
 
 
-//start
 
 ymaps.ready(init);
