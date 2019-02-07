@@ -73,6 +73,7 @@ function init () {
 
     fetch(url)
       .then(function(response) {
+        if(!response.ok) { resultsPanel.text("Ошибка :( Попробуйте другую локацию"); }
         return response.json();
       })
       .then(function(json) {
