@@ -131,10 +131,34 @@ processLocation = () => {
             mapStateAutoApply: false,
             multiRoute: true,
             routingMode: "pedestrian"
-        }).then(function(route) {
+        })
+        .done(function(route) {
+        //  console.log(route);
 
         var activeRoute = route.getActiveRoute(),
             yandex_duration = activeRoute.properties.get("duration");
+
+
+
+            activeRoute.getPaths().options.set({
+
+              wayPointStartIconLayout: "default#image",
+              wayPointStartIconImageHref: "images/sokolniki.png",
+              wayPointStartIconImageSize: [0, 0],
+              wayPointStartIconImageOffset: [0, 0],
+
+              // Задаем собственную картинку для последней путевой точки.
+              wayPointFinishIconLayout: "default#image",
+              wayPointFinishIconImageHref: "images/sokolniki.png",
+              wayPointFinishIconImageSize: [0, 0],
+              wayPointFinishIconImageOffset: [0, 0],
+
+              strokeColor: '0000ffff',
+              opacity: 0.5,
+              strokeWidth: 1.5
+            });
+            routesYandexOverlay.add(activeRoute.getPaths());
+
 
             yandex_time = Math.floor(yandex_duration.value/60);
             d3.select("#yandex-result-"+points[currentPoint].properties.id).text(yandex_time);

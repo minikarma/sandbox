@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Display a map</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoibW9zY293Y2l0eW1hcCIsImEiOiJjajc3ZnQ1aGUxem41MzNudXU3MnBnZDA2In0.akDBtVzE-R3FgVs64ObGLg';
+  var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/moscowcitymap/cjk808og07w3e2rsc6usuestn',
+    center: [37.64, 55.75], // starting position [lng, lat]s
+    zoom: 10 // starting zoom
+  });
+  //55.775093, 37.655390 комсомольская пл
+  //55.770294, 37.643717 сахарова-садовое
+  //55.759343, 37.645716 покровка
+  var url1 = "http://m3.urbica.co/api/isochrones/?lng=37.645716&lat=55.759343&network=plan&timeOfDay=day&travelTime=30";
+  var url2 = "http://m3.urbica.co/api/isochrones/?lng=37.645716&lat=55.759343&network=plan&timeOfDay=day&travelTime=30&bannedAgencies=32f54cd5-e252-4c5c-877e-c96a2972c97e,%D0%9C%D0%BE%D1%81%D0%BA%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BC%D0%B5%D1%82%D1%80%D0%BE%D0%BF%D0%BE%D0%BB%D0%B8%D1%82%D0%B5%D0%BD";
+
+  map.on("load", ()=>{
+
+    fetch(url1)
+      .then(response => response.json())
+      .then(json => {
+        console.log(json);
+        map.addSource("url1", { type: "geojson", data: json });
+        map.addLayer({
+          id: "url1",
+          source: "url1",
+          type: "fill",
+          paint: {
+            "fill-color": "#a0a",
+            "fill-opacity": 0.5
+          }
+        })
+      });
+
+    fetch(url2)
+      .then(response => response.json())
+      .then(json => {
+        console.log(json);
+        map.addSource("url2", { type: "geojson", data: json });
+        map.addLayer({
+          id: "url2",
+          source: "url2",
+          type: "fill",
+          paint: {
+            "fill-color": "#07d",
+            "fill-opacity": 0.5
+          }
+        })
+      });
+
+
+
+  })
+//http://178.132.206.5/api/isochrones/?lng=37.642093247653435&lat=55.76929802643349&network=current&timeOfDay=morning&travelTime=15
+//http://178.132.206.5/api/isochrones/?lng=37.642093247653435&lat=55.76929802643349&network=plan&timeOfDay=morning&travelTime=15
+</script>
+
+</body>
+</html>
