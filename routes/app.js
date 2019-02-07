@@ -40,30 +40,31 @@ function init () {
         processLocation();
   });
 
-  routesOverlay = new ymaps.GeoObjectCollection(null, {	});
-  routesYandexOverlay = new ymaps.GeoObjectCollection(null, {	});
-  metroPointsOverlay = new ymaps.GeoObjectCollection(null, {	preset: 'islands#greyStretchyIcon' });
-
-
+  routesOverlay = new ymaps.GeoObjectCollection(null, {
+    strokeColor: '#05E',
+    opacity: 0.7,
+    strokeWidth: 2
+  });
+  routesYandexOverlay = new ymaps.GeoObjectCollection(null, {
+    strokeColor: '#f0a',
+    opacity: 0.5,
+    strokeWidth: 1.5
+  });
+  metroPointsOverlay = new ymaps.GeoObjectCollection(null, {
+      preset: 'islands#blueStretchyIcon',
+      draggable: false
+  });
 
   map.geoObjects.add(routesOverlay);
   map.geoObjects.add(routesYandexOverlay);
   map.geoObjects.add(metroPointsOverlay);
   map.geoObjects.add(centerPoint);
 
-  d3.select("#requestBtn").on("click", ()=>{
-    //center = centerPoint.geometry.getCoordinates();
-    processLocation();
-  });
 
-
-
-processLocation = () => {
+  processLocation = () => {
 
     resultsPanel.text("");
-
     var url = "https://router.dev.urbica.co/api/rpc/metro_geojson?x1="+center[0]+"&y1="+center[1]+"&num_stations=10"
-
     routesOverlay.removeAll();
     routesYandexOverlay.removeAll();
     metroPointsOverlay.removeAll();
@@ -81,11 +82,7 @@ processLocation = () => {
           var route = new ymaps.GeoObject({
             geometry: f.geometry,
             properties: { hintContent: "Маршрут Urbica" }
-          }, {
-            strokeColor: '#a0a',
-            opacity: 0.6,
-            strokeWidth: 2
-          });
+          }, { });
           routesOverlay.add(route);
 
           var point_geom, p1, p2;
@@ -108,25 +105,18 @@ processLocation = () => {
           row.append("div").attr("class", "station-name").text(f.properties.name);
           row.append("div").attr("class", "time-result").attr("id", "urbica-result-"+f.properties["id"]).text(urbica_time);
           row.append("div").attr("class", "time-result").attr("id", "yandex-result-"+f.properties["id"]);
-
-
-
-
         });
-
 
       //make yandex routing
       //console.log(points);
       currentPoint = 0;
       nextPoint();
-
       });
   }
 
   nextPoint = () => {
     //console.log(points);
     if(currentPoint < points.length) {
-
         ymaps.route([center, points[currentPoint].geometry.coordinates], {
             mapStateAutoApply: false,
             multiRoute: true,
@@ -137,80 +127,25 @@ processLocation = () => {
 
         var activeRoute = route.getActiveRoute(),
             yandex_duration = activeRoute.properties.get("duration");
-
-
-
-            activeRoute.getPaths().options.set({
-
-              wayPointStartIconLayout: "default#image",
-              wayPointStartIconImageHref: "images/sokolniki.png",
-              wayPointStartIconImageSize: [0, 0],
-              wayPointStartIconImageOffset: [0, 0],
-
-              // Задаем собственную картинку для последней путевой точки.
-              wayPointFinishIconLayout: "default#image",
-              wayPointFinishIconImageHref: "images/sokolniki.png",
-              wayPointFinishIconImageSize: [0, 0],
-              wayPointFinishIconImageOffset: [0, 0],
-
-              strokeColor: '0000ffff',
-              opacity: 0.5,
-              strokeWidth: 1.5
-            });
-            routesYandexOverlay.add(activeRoute.getPaths());
-
-
             yandex_time = Math.floor(yandex_duration.value/60);
             d3.select("#yandex-result-"+points[currentPoint].properties.id).text(yandex_time);
-//            output.push({ ll: points[currentPoint], t: Math.floor(yandex_duration.value/60) });
-            var paths = activeRoute.getPaths();
+            activeRoute.getPaths().each(function(path) {
+              routesYandexOverlay.add(path.getSegments());
+            });
 
-
-            // paths.each(function(path) {
-            //     path.options.set({
-            //         //  В балуне выводим только информацию о времени движения с учетом пробок.
-            //         balloonContentLayout: ymaps.templateLayoutFactory.createClass('{{ properties.humanJamsTime }}'),
-            //         // Можно выставить настройки графики маршруту.
-            //         strokeColor: '#0000DD',
-            //         strokeWidth: 2,
-            //         opacity: 0.5
-            //       });
-            //     routesYandexOverlay.add(path);
-            // });
-            var urbica_time = Math.round(((Math.round(points[currentPoint].properties.route_cost)/1000)/4.5)*60)
-            var t = urbica_time + " / " + yandex_time;
+              var urbica_time = Math.round(((Math.round(points[currentPoint].properties.route_cost)/1000)/4.5)*60)
+              var t = urbica_time + " / " + yandex_time;
 //            add points with time
             metroPointsOverlay.add(new ymaps.GeoObject({
-                      // Описание геометрии.
                       geometry: { type: "Point", coordinates: points[currentPoint].geometry.coordinates },
-                      // Свойства.
-                      properties: {
-                          // Контент метки.
-                          iconContent: t
-                    }
-                  }, {
-                      preset: 'islands#blueStretchyIcon',
-                      draggable: false
-            }));
-
+                      properties: { iconContent: t }
+              }));
             currentPoint++;
             nextPoint();
           });
-      } else {
-        //console.log("END");
-
-
       }
   }
-
-  //start
   //start app
   processLocation();
-
-
-
 }
-
-
-
 ymaps.ready(init);
