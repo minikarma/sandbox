@@ -78,7 +78,8 @@ function init () {
       .then(function(json) {
 
         points = [];
-        json.features.forEach(f=>{
+
+        json.features.sort((a,b)=>a.properties.route_cost - b.properties.route_cost).forEach(f=>{
           var route = new ymaps.GeoObject({
             geometry: f.geometry,
             properties: { hintContent: "Маршрут Urbica" }
