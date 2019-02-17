@@ -160,7 +160,7 @@ function init () {
   }
 
   nextLocation = () => {
-    if(currentLocation < 50) {
+    if(currentLocation < locations.length) {
       center = [+locations[currentLocation].longitude, +locations[currentLocation].latitude];
       processLocation();
     } else {
