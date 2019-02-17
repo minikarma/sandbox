@@ -69,7 +69,7 @@ function init () {
           .append("div")
           .attr("class", "item")
           .attr("id", "i-"+d.item_id)
-          .text(d.title)
+          .text(d.address)
           .on("click", ()=>{
             getInfo(d);
           })
@@ -99,7 +99,7 @@ function init () {
   processLocation = () => {
     infoBlock.text("");
     resultsPanel.text("");
-    var url = "https://router.dev.urbica.co/api/rpc/metro_geojson?x1="+center[0]+"&y1="+center[1]+"&num_stations=10"
+    var url = "https://router.dev.urbica.co/api/rpc/metro_geojson?x1="+center[0]+"&y1="+center[1]+"&num_stations=5"
     routesOverlay.removeAll();
     routesYandexOverlay.removeAll();
     metroPointsOverlay.removeAll();
@@ -166,6 +166,8 @@ function init () {
 
         var activeRoute = route.getActiveRoute(),
             yandex_duration = activeRoute.properties.get("duration");
+            yandex_time = Math.floor(yandex_duration.value/60);
+            points[currentPoint].properties["yandex_time"] = yandex_time;
             diff = points[currentPoint].properties["urbica_time"] - yandex_time;
             d3.select("#yandex-result-"+points[currentPoint].properties.id).text(yandex_time);
             d3.select("#diff-result-"+points[currentPoint].properties.id).text(diff);
