@@ -4,7 +4,8 @@ var points = [],
     output = [],
     resultsPanel = d3.select("#results"),
     currentPoint = 0,
-    maxRandomPoints = 25,
+    currentLocation = 0,
+    locations = [],
     center = [37.627183862426424, 55.73485197977672];
 
 function init () {
@@ -64,15 +65,22 @@ function init () {
 
   d3.tsv("data/100.tsv")
     .then(data=>{
+
+
+      locations = data;
+      nextLocation();
+
       data.forEach(d=>{
         d3.select("#list")
           .append("div")
           .attr("class", "item")
           .attr("id", "i-"+d.item_id)
-          .text(d.title)
+          .append("div")
+          .attr("class", "item-title")
+          .text(d.address)
           .on("click", ()=>{
             getInfo(d);
-          })
+          });
 
       })
     })
@@ -82,10 +90,7 @@ function init () {
     d3.select("#i-"+item.item_id).attr("class", "item-selected");
     center = [+item.longitude,+item.latitude];
     map.setCenter(center);
-    centerPoint.geometry.setCoordinates(center);
-
     processLocation();
-
 
     infoBlock.append("div").text(item.title).style("font-weight", "bold");
     infoBlock.append("div").text(item.address).style("font-weight", "bold").style("margin-bottom", "8px");
@@ -97,9 +102,10 @@ function init () {
   }
 
   processLocation = () => {
+    centerPoint.geometry.setCoordinates(center);
     infoBlock.text("");
     resultsPanel.text("");
-    var url = "https://router.dev.urbica.co/api/rpc/metro_geojson?x1="+center[0]+"&y1="+center[1]+"&num_stations=10"
+    var url = "https://router.dev.urbica.co/api/rpc/metro_geojson?x1="+center[0]+"&y1="+center[1]+"&num_stations=3"
     routesOverlay.removeAll();
     routesYandexOverlay.removeAll();
     metroPointsOverlay.removeAll();
@@ -153,6 +159,15 @@ function init () {
       });
   }
 
+  nextLocation = () => {
+    if(currentLocation < 50) {
+      center = [+locations[currentLocation].longitude, +locations[currentLocation].latitude];
+      processLocation();
+    } else {
+      //console.log("END");
+    }
+  }
+
   nextPoint = () => {
     //console.log(points);
     if(currentPoint < points.length) {
@@ -166,9 +181,12 @@ function init () {
 
         var activeRoute = route.getActiveRoute(),
             yandex_duration = activeRoute.properties.get("duration");
+            yandex_time = Math.floor(yandex_duration.value/60);
+            points[currentPoint].properties["yandex_time"] = yandex_time;
             diff = points[currentPoint].properties["urbica_time"] - yandex_time;
             d3.select("#yandex-result-"+points[currentPoint].properties.id).text(yandex_time);
             d3.select("#diff-result-"+points[currentPoint].properties.id).text(diff);
+
             activeRoute.getPaths().each(function(path) {
               routesYandexOverlay.add(path.getSegments());
             });
@@ -183,6 +201,19 @@ function init () {
             currentPoint++;
             nextPoint();
           });
+      } else {
+        points.map(p=>p.properties).forEach(point => {
+          var diff = point.urbica_time-point.yandex_time;
+          var c = "#000";
+          if(diff>0) c = "blue";
+          if(diff<0) c = "purple"
+          d3.select("#i-"+locations[currentLocation].item_id).append("div")
+            .attr("class", "list-time-result")
+            .text(diff)
+            .style("color", c)
+        })
+        currentLocation++;
+        nextLocation();
       }
   }
   //start app
