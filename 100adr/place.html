@@ -3,11 +3,11 @@
 <html>
 
 <head>
-    <title>Маршруты</title>
+    <title>Примеры. Маршрут на общественном транспорте</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script src="//api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=779af61d-684a-4a85-bfd3-68855d3f7e2c&coordorder=longlat" type="text/javascript"></script>
     <script src="//d3js.org/d3.v5.min.js"></script>
-    <script src='//npmcdn.com/@turf/turf/turf.min.js'></script>
+    <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
 	<style>
         html, body, #map {
             width: 100%; height: 100%; padding: 0; margin: 0;
@@ -15,8 +15,10 @@
         }
         #panel {
           position: absolute;
-          left: 20px;
-          top: 20px;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 250px;
           background: #fff;
           z-index: 300000;
           padding: 12px;
@@ -24,6 +26,7 @@
           font-size: 13px;
 
         }
+
         #requestBtn {
           display: inline-block;
           margin-left: 12px;
@@ -34,39 +37,19 @@
           font-size: 14px;
         }
         #time { width: 40px; }
-
-        .result-row {
-          display: flex;
-          line-height: 24px;
-          flex-direction: row;
-        }
-        .result-row-header {
-          display: flex;
-          color: #666;
-          line-height: 24px;
-          flex-direction: row;
-        }
-
-        .station-name { width: 200px; }
-        .time-result { width: 45px; text-align: right; }
-
     </style>
 </head>
 
 <body>
 <div id="map"></div>
-<div id="list"></div>
 <div id="panel">
-  <div id="info"></div>
-  <div class="result-row-header">
-    <div class="station-name">Название станции</div>
-    <div class="time-result" style="color: #05E">Urbica</div>
-    <div class="time-result" style="color: #a0a">YNDX</div>
+  <div>
+    Время, мин&nbsp;<input type="text" id="time" value="30" width="20" />
+    <div id='requestBtn'>Посчитать</div>
   </div>
   <div id="results"></div>
-
 </div>
-<script src="app.js" type="text/javascript"></script>
+<script src="place.js" type="text/javascript"></script>
 </body>
 
 </html>
