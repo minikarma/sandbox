@@ -13,8 +13,10 @@
     <style>
         body { margin:0; padding:0; font-family: Arial, sans-serif; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
-        #panel { padding: 10px; position:absolute; top:10px; left: 10px; z-index: 1000; background: #fff; }
-        .location { line-height: 30px; margin-bottom: 6px; }
+        #panel { font-size: 12px; padding: 10px; position:absolute; top:10px; left: 10px; z-index: 1000; background: #fff; }
+        .location { line-height: 22px; }
+        .legend { line-height: 22px; }
+        .key { max-width: 250px; overflow-x: auto;}
 
     </style>
 </head>
@@ -24,6 +26,16 @@
 <div id='panel'>
   <div class="location" id="o"></div>
   <div class="location" id="d"></div>
+  <div class="legend"><span style="color: #09F">◼<span><span>&nbsp;Mapbox</span>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #b3F">◼<span><span>&nbsp;HERE</span></div>
+  <div class="legend"><span style="color: #349">•<span><span>&nbsp;maxheight</span>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #953">•<span><span>&nbsp;maxweight</span></div>
+  <div class="legend">
+    <br/><b>Route params:</b><br/>
+    height: 4.11m (13'6")<br/>
+    weight: 21.77 tons(48,000 lbs)<br/>
+    axle load: 9.07 metric Tons (20,000 lbs)<br/>
+    width: 2.6 m (102.36")<br/>
+    length: 21.64m (71')
+  </div>
 </div>
 
 <script src="app.js" type="text/javascript"></script>

@@ -64,6 +64,11 @@ decode = (str, precision) => {
     return coordinates;
 };
 
+var popup = new mapboxgl.Popup({
+  closeButton: false,
+  closeOnClick: false
+});
+
 
 
 map.on("load", () => {
@@ -72,6 +77,8 @@ map.on("load", () => {
   map.addSource("locations", { type: "geojson",  data: { type: "FeatureCollection", features: [] }});
   map.addSource("mapbox_route", { type: "geojson",  data: { type: "FeatureCollection", features: [] }})
   map.addSource("here_route", { type: "geojson",  data: { type: "FeatureCollection", features: [] }})
+  map.addSource("maxweight", { type: "geojson",  data: './data/maxweight.geojson'})
+  map.addSource("maxheight", { type: "geojson",  data: './data/maxheight.geojson'})
 
   map.addLayer({
     id: "mapbox_route",
@@ -96,6 +103,26 @@ map.on("load", () => {
   });
 
   map.addLayer({
+    id: "maxheight_points",
+    source: "maxheight",
+    type: "circle",
+    paint: {
+      "circle-color": "#349",
+      "circle-radius": 3
+    }
+  });
+
+  map.addLayer({
+    id: "maxweight_points",
+    source: "maxweight",
+    type: "circle",
+    paint: {
+      "circle-color": "#953",
+      "circle-radius": 3
+    }
+  });
+
+  map.addLayer({
     id: "locations",
     source: "locations",
     type: "circle",
@@ -105,7 +132,83 @@ map.on("load", () => {
     }
   });
 
+  map.addLayer({
+    id: "maxweight_labels",
+    source: "maxweight",
+    type: "symbol",
+    layout: {
+      "text-field": ["get", "maxweight"],
+      "text-offset": [0,1],
+      "text-size": [
+        'interpolate',
+        ['exponential', 1.15],
+        ['zoom'],
+        11, 10,
+        18, 12
+      ]
+    },
+    paint: {
+      "text-color": "#953",
+      "text-opacity": [
+        'interpolate',
+        ['exponential', 1.15],
+        ['zoom'],
+        10, 0,
+        11, 1
+      ]
+    }
+  });
 
+  map.addLayer({
+    id: "maxheight_labels",
+    source: "maxheight",
+    type: "symbol",
+    layout: {
+      "text-field": ["get", "maxheight"],
+      "text-offset": [0,1],
+      "text-size": [
+        'interpolate',
+        ['exponential', 1.15],
+        ['zoom'],
+        11, 10,
+        18, 12
+      ]
+    },
+    paint: {
+      "text-color": "#349",
+      "text-opacity": [
+        'interpolate',
+        ['exponential', 1.15],
+        ['zoom'],
+        10, 0,
+        11, 1
+      ]
+    }
+  });
+
+  map.on('mousemove', function(e) {
+    // Change the cursor style as a UI indicator.
+
+    var bbox = [[e.point.x - 5, e.point.y - 5], [e.point.x + 5, e.point.y + 5]];
+    var features = map.queryRenderedFeatures(bbox, { layers: ['maxheight_points','maxweight_points'] });
+    var coordinates = [e.lngLat.lng,e.lngLat.lat];
+
+    if(features.length>0) {
+      map.getCanvas().style.cursor = 'pointer';
+      var description = '';
+      for(k in features[0].properties) {
+        description += "<div class='key'>" + k + ": " + features[0].properties[k] + "</div>"
+      }
+
+      // based on the feature found.
+        popup.setLngLat(coordinates)
+          .setHTML(description)
+          .addTo(map);
+    } else {
+      map.getCanvas().style.cursor = '';
+      popup.remove();
+    }
+  });
 
 });
 
@@ -171,8 +274,9 @@ requestRoutes = () => {
       map.getSource("mapbox_route").setData(mroute);
    });
 
+   //limitedWeight=21.77&height=4.11
    //process here route
-   var here_url = 'https://route.api.here.com/routing/7.2/calculateroute.json?app_id='+app_id+'&app_code='+app_code+'&waypoint0=geo!'+locations.o[1]+','+locations.o[0]+'&waypoint1=geo!'+locations.d[1]+','+locations.d[0]+'&mode=fastest;truck;traffic:disabled&limitedWeight=30.5&height=4.25&shippedHazardousGoods=harmfulToWater&routeAttributes=waypoints,shape'
+   var here_url = 'https://route.api.here.com/routing/7.2/calculateroute.json?app_id='+app_id+'&app_code='+app_code+'&waypoint0=geo!'+locations.o[1]+','+locations.o[0]+'&waypoint1=geo!'+locations.d[1]+','+locations.d[0]+'&mode=fastest;truck;traffic:disabled&limitedWeight=21.77&height=4.11&shippedHazardousGoods=harmfulToWater&routeAttributes=waypoints,shape'
 
    fetch(here_url)
      .then(function(response) {
