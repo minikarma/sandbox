@@ -77,8 +77,9 @@ map.on("load", () => {
   map.addSource("locations", { type: "geojson",  data: { type: "FeatureCollection", features: [] }});
   map.addSource("mapbox_route", { type: "geojson",  data: { type: "FeatureCollection", features: [] }})
   map.addSource("here_route", { type: "geojson",  data: { type: "FeatureCollection", features: [] }})
-  map.addSource("maxweight", { type: "geojson",  data: './data/maxweight.geojson'})
-  map.addSource("maxheight", { type: "geojson",  data: './data/maxheight.geojson'})
+  map.addSource("maxweight", { type: "geojson",  data: './data/weights.geojson'})
+  map.addSource("maxheight", { type: "geojson",  data: './data/heights.geojson'})
+  map.addSource("hgv_no", { type: "geojson",  data: './data/hgv_no.geojson'})
 
   map.addLayer({
     id: "mapbox_route",
@@ -108,7 +109,19 @@ map.on("load", () => {
     type: "circle",
     paint: {
       "circle-color": "#349",
-      "circle-radius": 3
+      "circle-radius": 3,
+      "circle-opacity": 0.7
+    }
+  });
+
+  map.addLayer({
+    id: "hgv_no_points",
+    source: "hgv_no",
+    type: "circle",
+    paint: {
+      "circle-color": "#822",
+      "circle-radius": 3,
+      "circle-opacity": 0.7
     }
   });
 
@@ -117,8 +130,9 @@ map.on("load", () => {
     source: "maxweight",
     type: "circle",
     paint: {
-      "circle-color": "#953",
-      "circle-radius": 3
+      "circle-color": "#a70",
+      "circle-radius": 3,
+      "circle-opacity": 0.7
     }
   });
 
@@ -186,19 +200,47 @@ map.on("load", () => {
     }
   });
 
+  map.addLayer({
+    id: "hgv_no_labels",
+    source: "hgv_no",
+    type: "symbol",
+    layout: {
+      "text-field": ["get", "maxheight"],
+      "text-offset": [0,1],
+      "text-size": [
+        'interpolate',
+        ['exponential', 1.15],
+        ['zoom'],
+        11, 10,
+        18, 12
+      ]
+    },
+    paint: {
+      "text-color": "#822",
+      "text-opacity": [
+        'interpolate',
+        ['exponential', 1.15],
+        ['zoom'],
+        10, 0,
+        11, 1
+      ]
+    }
+  });
+
   map.on('mousemove', function(e) {
     // Change the cursor style as a UI indicator.
 
     var bbox = [[e.point.x - 5, e.point.y - 5], [e.point.x + 5, e.point.y + 5]];
-    var features = map.queryRenderedFeatures(bbox, { layers: ['maxheight_points','maxweight_points'] });
+    var features = map.queryRenderedFeatures(bbox, { layers: ['maxheight_points','maxweight_points','hgv_no_points'] });
     var coordinates = [e.lngLat.lng,e.lngLat.lat];
 
     if(features.length>0) {
       map.getCanvas().style.cursor = 'pointer';
-      var description = '';
+      var description = '<div class="params">';
       for(k in features[0].properties) {
         description += "<div class='key'>" + k + ": " + features[0].properties[k] + "</div>"
       }
+      description += '</div>';
 
       // based on the feature found.
         popup.setLngLat(coordinates)
