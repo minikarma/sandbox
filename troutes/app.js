@@ -81,32 +81,70 @@ map.on("load", () => {
   map.addSource("maxheight", { type: "geojson",  data: './data/heights.geojson'})
   map.addSource("hgv_no", { type: "geojson",  data: './data/hgv_no.geojson'})
 
+
   map.addLayer({
-    id: "mapbox_route",
-    source: "mapbox_route",
+    id: "maxweight_lines",
+    source: "maxweight",
     type: "line",
+    filter: ["==", ["geometry-type"], "LineString"],
     paint: {
-      "line-color": "#09F",
+      "line-color": "#a70",
       "line-width": 2,
-      "line-opacity": 0.6
+      "line-opacity": 0.5
+    }
+  });
+  map.addLayer({
+    id: "maxheight_lines",
+    source: "maxheight",
+    type: "line",
+    filter: ["==", ["geometry-type"], "LineString"],
+    paint: {
+      "line-color": "#349",
+      "line-width": 2,
+      "line-opacity": 0.5
+    }
+  });
+  map.addLayer({
+    id: "hgv_no_lines",
+    source: "hgv_no",
+    type: "line",
+    filter: ["==", ["geometry-type"], "LineString"],
+    paint: {
+      "line-color": "#822",
+      "line-width": 2,
+      "line-opacity": 0.5
     }
   });
 
-  map.addLayer({
-    id: "here_route",
-    source: "here_route",
-    type: "line",
-    paint: {
-      "line-color": "#b3F",
-      "line-width": 2,
-      "line-opacity": 0.6
-    }
-  });
+
+
+    map.addLayer({
+      id: "mapbox_route",
+      source: "mapbox_route",
+      type: "line",
+      paint: {
+        "line-color": "#09F",
+        "line-width": 2,
+        "line-opacity": 0.6
+      }
+    });
+
+    map.addLayer({
+      id: "here_route",
+      source: "here_route",
+      type: "line",
+      paint: {
+        "line-color": "#b3F",
+        "line-width": 2,
+        "line-opacity": 0.6
+      }
+    });
 
   map.addLayer({
     id: "maxheight_points",
     source: "maxheight",
     type: "circle",
+    filter: ["==", ["geometry-type"], "Point"],
     paint: {
       "circle-color": "#349",
       "circle-radius": 3,
@@ -118,6 +156,7 @@ map.on("load", () => {
     id: "hgv_no_points",
     source: "hgv_no",
     type: "circle",
+    filter: ["==", ["geometry-type"], "Point"],
     paint: {
       "circle-color": "#822",
       "circle-radius": 3,
@@ -129,12 +168,17 @@ map.on("load", () => {
     id: "maxweight_points",
     source: "maxweight",
     type: "circle",
+    filter: ["==", ["geometry-type"], "Point"],
     paint: {
       "circle-color": "#a70",
       "circle-radius": 3,
       "circle-opacity": 0.7
     }
   });
+
+
+
+
 
   map.addLayer({
     id: "locations",
@@ -238,7 +282,7 @@ map.on("load", () => {
       map.getCanvas().style.cursor = 'pointer';
       var description = '<div class="params">';
       for(k in features[0].properties) {
-        description += "<div class='key'>" + k + ": " + features[0].properties[k] + "</div>"
+        if(features[0].properties[k] !== "null") description += "<div class='key'>" + k + ": " + features[0].properties[k] + "</div>"
       }
       description += '</div>';
 
