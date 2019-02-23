@@ -275,7 +275,7 @@ map.on("load", () => {
     // Change the cursor style as a UI indicator.
 
     var bbox = [[e.point.x - 5, e.point.y - 5], [e.point.x + 5, e.point.y + 5]];
-    var features = map.queryRenderedFeatures(bbox, { layers: ['maxheight_points','maxweight_points','hgv_no_points'] });
+    var features = map.queryRenderedFeatures(bbox, { layers: ['maxheight_points','maxweight_points','hgv_no_points', 'maxheight_lines','maxweight_lines','hgv_no_lines'] });
     var coordinates = [e.lngLat.lng,e.lngLat.lat];
 
     if(features.length>0) {
