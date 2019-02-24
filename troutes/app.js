@@ -99,7 +99,7 @@ map.on("load", () => {
     type: "line",
     filter: ["==", ["geometry-type"], "LineString"],
     paint: {
-      "line-color": "#98AA27",
+      "line-color": "#349",
       "line-width": 2,
       "line-opacity": 0.5
     }
@@ -170,7 +170,7 @@ map.on("load", () => {
     type: "circle",
     filter: ["==", ["geometry-type"], "Point"],
     paint: {
-      "circle-color": "#98AA27",
+      "circle-color": "#a70",
       "circle-radius": 3,
       "circle-opacity": 0.7
     }
@@ -206,7 +206,7 @@ map.on("load", () => {
       ]
     },
     paint: {
-      "text-color": "#98AA27",
+      "text-color": "#953",
       "text-opacity": [
         'interpolate',
         ['exponential', 1.15],
