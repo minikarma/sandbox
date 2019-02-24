@@ -12,6 +12,12 @@ var locations = {
   d: [-75.01267061243713,39.97170096242655]
 };
 
+var colors = {
+  maxheight: "#3751D5",
+  hgv_no: "#B43434",
+  maxweight: "#45A86E"
+}
+
 var app_id = 'oo8vWnUj250z0MsyBMjp', app_code = '0wlGsC5OVxjmseHa9JTyhw';
 
 
@@ -88,7 +94,7 @@ map.on("load", () => {
     type: "line",
     filter: ["==", ["geometry-type"], "LineString"],
     paint: {
-      "line-color": "#a70",
+      "line-color": colors.maxweight,
       "line-width": 2,
       "line-opacity": 0.5
     }
@@ -99,7 +105,7 @@ map.on("load", () => {
     type: "line",
     filter: ["==", ["geometry-type"], "LineString"],
     paint: {
-      "line-color": "#349",
+      "line-color": colors.maxheight,
       "line-width": 2,
       "line-opacity": 0.5
     }
@@ -110,7 +116,7 @@ map.on("load", () => {
     type: "line",
     filter: ["==", ["geometry-type"], "LineString"],
     paint: {
-      "line-color": "#822",
+      "line-color": colors.hgv_no,
       "line-width": 2,
       "line-opacity": 0.5
     }
@@ -146,7 +152,7 @@ map.on("load", () => {
     type: "circle",
     filter: ["==", ["geometry-type"], "Point"],
     paint: {
-      "circle-color": "#349",
+      "circle-color": colors.maxheight,
       "circle-radius": 3,
       "circle-opacity": 0.7
     }
@@ -158,7 +164,7 @@ map.on("load", () => {
     type: "circle",
     filter: ["==", ["geometry-type"], "Point"],
     paint: {
-      "circle-color": "#822",
+      "circle-color": colors.hgv_no,
       "circle-radius": 3,
       "circle-opacity": 0.7
     }
@@ -170,7 +176,7 @@ map.on("load", () => {
     type: "circle",
     filter: ["==", ["geometry-type"], "Point"],
     paint: {
-      "circle-color": "#a70",
+      "circle-color": colors.maxweight,
       "circle-radius": 3,
       "circle-opacity": 0.7
     }
@@ -206,7 +212,7 @@ map.on("load", () => {
       ]
     },
     paint: {
-      "text-color": "#953",
+      "text-color": colors.maxweight,
       "text-opacity": [
         'interpolate',
         ['exponential', 1.15],
@@ -233,7 +239,7 @@ map.on("load", () => {
       ]
     },
     paint: {
-      "text-color": "#349",
+      "text-color": colors.maxheight,
       "text-opacity": [
         'interpolate',
         ['exponential', 1.15],
@@ -260,7 +266,7 @@ map.on("load", () => {
       ]
     },
     paint: {
-      "text-color": "#822",
+      "text-color": colors.hgv_no,
       "text-opacity": [
         'interpolate',
         ['exponential', 1.15],
