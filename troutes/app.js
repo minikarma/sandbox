@@ -340,7 +340,7 @@ requestRoutes = () => {
         "height": "4.11",
         "width": "2.6",
         "length": "21.64",
-        "weight": "21.77",
+        "weight": "11.79",
         "axle_load": "9.07",
         "hazmat": false
       }
@@ -362,7 +362,7 @@ requestRoutes = () => {
 
    //limitedWeight=21.77&height=4.11
    //process here route
-   var here_url = 'https://route.api.here.com/routing/7.2/calculateroute.json?app_id='+app_id+'&app_code='+app_code+'&waypoint0=geo!'+locations.o[1]+','+locations.o[0]+'&waypoint1=geo!'+locations.d[1]+','+locations.d[0]+'&mode=fastest;truck;traffic:disabled&limitedWeight=21.77&height=4.11&shippedHazardousGoods=harmfulToWater&routeAttributes=waypoints,shape'
+   var here_url = 'https://route.api.here.com/routing/7.2/calculateroute.json?app_id='+app_id+'&app_code='+app_code+'&waypoint0=geo!'+locations.o[1]+','+locations.o[0]+'&waypoint1=geo!'+locations.d[1]+','+locations.d[0]+'&mode=fastest;truck;traffic:disabled&limitedWeight=11.79&height=4.11&shippedHazardousGoods=harmfulToWater&routeAttributes=waypoints,shape'
 
    fetch(here_url)
      .then(function(response) {
