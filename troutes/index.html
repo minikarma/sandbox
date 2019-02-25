@@ -13,11 +13,14 @@
     <style>
         body { margin:0; padding:0; font-family: Arial, sans-serif; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
-        #panel { font-size: 12px; padding: 10px; position:absolute; top:10px; left: 10px; z-index: 1000; background: #fff; }
-        .location { line-height: 22px; }
+        #panel { width: 250px; font-size: 13px; padding: 10px; position:absolute; top:10px; left: 10px; z-index: 1000; background: #fff; }
+        .location { line-height: 22px; font-size: 12px; }
         .legend { line-height: 22px; }
         .key { max-width: 250px; overflow-x: auto;}
         .params { max-height: 350px; overflow-y: auto; }
+        .input-params { line-height: 28px; display: flex; justify-content: space-between; }
+        .input-params div input { width: 60px; }
+        .action-btn { background: #09F; color: white; padding: 2px 10px; float: right; cursor: pointer; }
 
     </style>
 </head>
@@ -30,12 +33,20 @@
   <div class="legend"><span style="color: #09F">◼<span><span>&nbsp;Mapbox</span>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #b3F">◼<span><span>&nbsp;HERE</span></div>
   <div class="legend"><span style="color: #B43434">•<span><span>&nbsp;hgv:&nbsp;no</span>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #3751D5">•<span><span>&nbsp;maxheight</span>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #45A86E">•<span><span>&nbsp;maxweight</span></div>
   <div class="legend">
-    <br/><b>Route params:</b><br/>
-    height: 4.11m (13'6")<br/>
-    weight: 11.79 tons(26,000 lbs)<br/>
-    axle load: 9.07 metric Tons (20,000 lbs)<br/>
-    width: 2.6 m (102.36")<br/>
-    length: 21.64m (71')
+    <div style="margin-top: 16px;"><b>Route params:</b></div>
+    <div class="input-params">
+      <div>Max weight, tons</div>
+      <div><input type="text" value="11.79" id="maxweight" /></div>
+    </div>
+    <div class="input-params">
+      <div>Max height, m</div>
+      <div><input type="text" value="4.11" id="maxheight" /></div>
+    </div>
+    <div><br/></div>
+    <div class="input-params" style="text-align: center">
+      <div>&nbsp;</div>
+      <div class="action-btn" onclick="requestRoutes()">Re-route</div>
+    </div>
   </div>
 </div>
 

@@ -1,16 +1,49 @@
+var q = function(item) {
+  var svalue = location.search.match(
+    new RegExp("[?&]" + item + "=([^&]*)(&?)", "i")
+  );
+  return svalue ? svalue[1] : svalue;
+};
+
+//main configuration
+c = {
+  orign: q("orign") ? [+q("orign").split(",")[0],+q("orign").split(",")[1]] : [-75.18368555231567,40.01231780433909],
+  destination: q("destination") ? [+q("destination").split(",")[0],+q("destination").split(",")[1]] : [-75.12775501525252,40.025288504863425],
+  center: q("center") ? [+q("center").split(",")[0],+q("center").split(",")[1]] : [-75.17826974331649,40.012921147425146], //galton's starting point && center of the map on start
+  zoom: q("zoom") ? q("zoom") : 11,
+  height: q("height") ? q("height") : 4.11,
+  weight: q("weight") ? q("weight") : 11.79
+};
+
+function updateURLParams() {
+  var u = "./?",
+    t;
+  for (i in c) {
+    u += "&" + i + "=" + c[i];
+  }
+  window.history.pushState(null, "Galton", u);
+}
+
+//set params in form
+d3.select("#maxweight").attr("value", c.weight);
+d3.select("#maxheight").attr("value", c.height);
+
+updateURLParams();
+
+console.log("c");
+console.log(c);
+
 mapboxgl.accessToken = 'pk.eyJ1IjoidXJiaWNhIiwiYSI6ImNpamFhZXNkOTAwMnp2bGtxOTFvMTNnNjYifQ.jUuvgnxQCuUBUpJ_k7xtkQ';
 var map = new mapboxgl.Map({
     container: 'map', // container id
     style: 'mapbox://styles/mapbox/light-v9', // stylesheet location
-    center: [-75.15343294154864, 39.98538128466194], // starting position [lng, lat]
-    zoom: 9 // starting zoom
+    center: c.center, // starting position [lng, lat]
+    zoom: c.zoom // starting zoom
 });
 
+
 var panel = d3.select("#panel");
-var locations = {
-  o: [-75.11566743860915,39.99800684348918],
-  d: [-75.01267061243713,39.97170096242655]
-};
+
 
 var colors = {
   maxheight: "#3751D5",
@@ -19,8 +52,6 @@ var colors = {
 }
 
 var app_id = 'oo8vWnUj250z0MsyBMjp', app_code = '0wlGsC5OVxjmseHa9JTyhw';
-
-
 newRoute = true;
 
 decode = (str, precision) => {
@@ -75,6 +106,65 @@ var popup = new mapboxgl.Popup({
   closeOnClick: false
 });
 
+requestRoutes = () => {
+
+  var maxweight = d3.select("#maxweight").property("value");
+  var maxheight = d3.select("#maxheight").property("value");
+  c.height = maxweight;
+  c.weight = maxheight;
+  updateURLParams();
+
+  //process mapbox route
+  requestJson = {
+    "locations": [
+        { "lat": c.orign[1], "lon": c.orign[0] },
+        { "lat": c.destination[1], "lon": c.destination[0] }
+      ],
+    "costing": "truck",
+    "costing_options": {
+      "truck": {
+        "height": maxheight,
+        "width": "2.6",
+        "length": "21.64",
+        "weight": maxweight,
+        "axle_load": "9.07",
+        "hazmat": false
+      }
+    }
+  }
+
+  url = 'https://api.mapbox.com/valhalla/v1/route?json='+JSON.stringify(requestJson)+'&access_token='+mapboxgl.accessToken;
+  fetch(url)
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(json) {
+      var mroute = turf.featureCollection([]);
+      json.trip.legs.forEach(l=>{
+        mroute.features.push(turf.lineString(decode(l.shape).map(s=>[s[1],s[0]])))
+      });
+      map.getSource("mapbox_route").setData(mroute);
+   });
+
+   //limitedWeight=21.77&height=4.11
+   //process here route
+   var here_url = 'https://route.api.here.com/routing/7.2/calculateroute.json?app_id='+app_id+'&app_code='+app_code+'&waypoint0=geo!'+c.orign[1]+','+c.orign[0]+'&waypoint1=geo!'+c.destination[1]+','+c.destination[0]+'&mode=fastest;truck;traffic:disabled&limitedWeight='+maxweight+'&height='+maxheight+'&shippedHazardousGoods=harmfulToWater&routeAttributes=waypoints,shape'
+
+   fetch(here_url)
+     .then(function(response) {
+       return response.json();
+     })
+     .then(function(json) {
+       var hroute = turf.featureCollection([]);
+       //console.log(json.response.route);
+       json.response.route.forEach(r=>{
+         hroute.features.push(turf.lineString(r.shape.map(s=>[+s.split(",")[1],+s.split(",")[0]])));
+       });
+       //console.log(hroute);
+       map.getSource("here_route").setData(hroute);
+    });
+
+}
 
 
 map.on("load", () => {
@@ -86,6 +176,16 @@ map.on("load", () => {
   map.addSource("maxweight", { type: "geojson",  data: './data/weights.geojson'})
   map.addSource("maxheight", { type: "geojson",  data: './data/heights.geojson'})
   map.addSource("hgv_no", { type: "geojson",  data: './data/hgv_no.geojson'})
+
+
+  if(c.orign && c.destination) {
+    var locationsJson = turf.featureCollection([]);
+    locationsJson.features.push(turf.point(c.orign, { "color": "#b0b" }))
+    locationsJson.features.push(turf.point(c.destination, { "color": "#09f" }));
+    console.log(map.getSource("locations"));
+    map.getSource("locations").setData(locationsJson);
+    requestRoutes();
+  }
 
 
   map.addLayer({
@@ -304,85 +404,45 @@ map.on("load", () => {
 
 });
 
+map.on("dragend", ()=>{
+  var cr = map.getCenter();
+  c.center = [cr.lng,cr.lat];
+  c.zoom = map.getZoom();
+  updateURLParams();
+});
+
+map.on("zoomend", ()=>{
+  var cr = map.getCenter();
+  c.center = [cr.lng,cr.lat];
+  c.zoom = map.getZoom();
+  updateURLParams();
+});
+
+
+
 map.on("click", (e) => {
-  console.log(e.lngLat);
   map.getSource("mapbox_route").setData({ type: "FeatureCollection", features: [] });
   map.getSource("here_route").setData({ type: "FeatureCollection", features: [] });
   var locationsJson = { type: "FeatureCollection", features: [] };
 
   if(newRoute) {
-    locations.o =  [e.lngLat.lng,e.lngLat.lat];
-    d3.select("#o").text("O: " + locations.o);
+    c.orign =  [e.lngLat.lng,e.lngLat.lat];
+    d3.select("#o").text("O: " + c.orign);
     d3.select("#d").text("D: ---");
-    locations.d = null;
+    c.destination = null;
+    updateURLParams();
     newRoute = false;
   } else {
-    locations.d = [e.lngLat.lng,e.lngLat.lat];
-    d3.select("#d").text("D: " + locations.d);
+    c.destination = [e.lngLat.lng,e.lngLat.lat];
+    d3.select("#d").text("D: " + c.destination);
     newRoute = true;
+    updateURLParams();
     requestRoutes();
   }
-  locationsJson.features.push(turf.point(locations.o, { "color": "#b0b" }))
-  if(locations.d) locationsJson.features.push(turf.point(locations.d, { "color": "#09f" }))
+  locationsJson.features.push(turf.point(c.orign, { "color": "#b0b" }))
+  if(c.destination) locationsJson.features.push(turf.point(c.destination, { "color": "#09f" }));
 
   map.getSource("locations").setData(locationsJson)
 
 
-  //locations.push([e.lngLat.lng,e.lngLat.lat]);
-  //if(locations.length>1) requestRoutes();
 });
-
-requestRoutes = () => {
-
-  //process mapbox route
-  requestJson = {
-    "locations": [
-        { "lat": locations.o[1], "lon": locations.o[0] },
-        { "lat": locations.d[1], "lon": locations.d[0] }
-      ],
-    "costing": "truck",
-    "costing_options": {
-      "truck": {
-        "height": "4.11",
-        "width": "2.6",
-        "length": "21.64",
-        "weight": "11.79",
-        "axle_load": "9.07",
-        "hazmat": false
-      }
-    }
-  }
-
-  url = 'https://api.mapbox.com/valhalla/v1/route?json='+JSON.stringify(requestJson)+'&access_token='+mapboxgl.accessToken;
-  fetch(url)
-    .then(function(response) {
-      return response.json();
-    })
-    .then(function(json) {
-      var mroute = turf.featureCollection([]);
-      json.trip.legs.forEach(l=>{
-        mroute.features.push(turf.lineString(decode(l.shape).map(s=>[s[1],s[0]])))
-      });
-      map.getSource("mapbox_route").setData(mroute);
-   });
-
-   //limitedWeight=21.77&height=4.11
-   //process here route
-   var here_url = 'https://route.api.here.com/routing/7.2/calculateroute.json?app_id='+app_id+'&app_code='+app_code+'&waypoint0=geo!'+locations.o[1]+','+locations.o[0]+'&waypoint1=geo!'+locations.d[1]+','+locations.d[0]+'&mode=fastest;truck;traffic:disabled&limitedWeight=11.79&height=4.11&shippedHazardousGoods=harmfulToWater&routeAttributes=waypoints,shape'
-
-   fetch(here_url)
-     .then(function(response) {
-       return response.json();
-     })
-     .then(function(json) {
-
-       var hroute = turf.featureCollection([]);
-       //console.log(json.response.route);
-       json.response.route.forEach(r=>{
-         hroute.features.push(turf.lineString(r.shape.map(s=>[+s.split(",")[1],+s.split(",")[0]])));
-       });
-       //console.log(hroute);
-       map.getSource("here_route").setData(hroute);
-    });
-
-}
