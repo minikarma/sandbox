@@ -41,22 +41,31 @@ function init () {
   });
 
   routesOverlay = new ymaps.GeoObjectCollection(null, {
-    strokeColor: '#05E',
-    opacity: 0.7,
-    strokeWidth: 2
+      strokeColor: '#2920AD',
+      opacity: 0.7,
+      strokeWidth: 2
   });
+
   routesYandexOverlay = new ymaps.GeoObjectCollection(null, {
-    strokeColor: '#f0a',
-    opacity: 0.5,
-    strokeWidth: 1.5
+    strokeColor: '#F43012',
+    opacity: 0.9,
+    strokeWidth: 1.2
   });
+  routesMapboxOverlay = new ymaps.GeoObjectCollection(null, {
+    strokeColor: '#CD2EE8',
+    opacity: 0.9,
+    strokeWidth: 1.2
+  });
+
+
   metroPointsOverlay = new ymaps.GeoObjectCollection(null, {
-      preset: 'islands#blueStretchyIcon',
+      preset: 'islands#blueCircleIcon',
       draggable: false
   });
 
-  map.geoObjects.add(routesOverlay);
   map.geoObjects.add(routesYandexOverlay);
+  map.geoObjects.add(routesMapboxOverlay);
+  map.geoObjects.add(routesOverlay);
   map.geoObjects.add(metroPointsOverlay);
   map.geoObjects.add(centerPoint);
 
@@ -67,6 +76,7 @@ function init () {
     var url = "https://router.dev.urbica.co/api/rpc/metro_geojson?x1="+center[0]+"&y1="+center[1]+"&num_stations=10"
     routesOverlay.removeAll();
     routesYandexOverlay.removeAll();
+    routesMapboxOverlay.removeAll();
     metroPointsOverlay.removeAll();
 
     points = [];
@@ -103,10 +113,11 @@ function init () {
 
           //add row
           var row = resultsPanel.append("div").attr("class", "result-row");
-          var urbica_time = Math.round(((Math.round(f.properties.route_cost)/1000)/4.5)*60);
+          var urbica_time = Math.round(((Math.round(f.properties.route_cost)/1000)/4.95)*60);
           row.append("div").attr("class", "station-name").text(f.properties.name);
           row.append("div").attr("class", "time-result").attr("id", "urbica-result-"+f.properties["id"]).text(urbica_time);
           row.append("div").attr("class", "time-result").attr("id", "yandex-result-"+f.properties["id"]);
+          row.append("div").attr("class", "time-result").attr("id", "mapbox-result-"+f.properties["id"]);
         });
 
       //make yandex routing
@@ -136,14 +147,35 @@ function init () {
             });
 
               var urbica_time = Math.round(((Math.round(points[currentPoint].properties.route_cost)/1000)/4.5)*60)
-              var t = urbica_time + " / " + yandex_time;
+              var t = urbica_time;// + " / " + yandex_time;
 //            add points with time
             metroPointsOverlay.add(new ymaps.GeoObject({
                       geometry: { type: "Point", coordinates: points[currentPoint].geometry.coordinates },
                       properties: { iconContent: t }
               }));
-            currentPoint++;
-            nextPoint();
+
+              //
+              var mbx_url = 'https://api.mapbox.com/directions/v5/mapbox/walking/'+center.join(",")+';'+points[currentPoint].geometry.coordinates.join(",")+'.json?access_token=pk.eyJ1IjoidXJiaWNhIiwiYSI6ImNpamFhZXNkOTAwMnp2bGtxOTFvMTNnNjYifQ.jUuvgnxQCuUBUpJ_k7xtkQ&steps=false&alternatives=false&overview=full&geometries=geojson'
+              fetch(mbx_url)
+                .then(function(response) {
+//                  if(!response.ok) { resultsPanel.text("Ошибка :( Попробуйте другую локацию"); }
+                  return response.json();
+                })
+                .then(function(m_json) {
+                  console.log(m_json);
+                  if(m_json.routes[0]) {
+                    var route = new ymaps.GeoObject({
+                      geometry: m_json.routes[0].geometry,
+                      properties: { hintContent: "Маршрут Mapbox" }
+                    }, { });
+                    routesMapboxOverlay.add(route);
+                    var mbx_duration = Math.floor(m_json.routes[0].duration/60);
+                    d3.select("#mapbox-result-"+points[currentPoint].properties.id).text(mbx_duration);
+                  }
+                  currentPoint++;
+                  nextPoint();
+                });
+
           });
       }
   }
